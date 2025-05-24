@@ -9,7 +9,6 @@ import {
     Dimensions,
     ImageBackground,
 } from 'react-native';
-import Swiper from 'react-native-swiper';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -21,70 +20,50 @@ export default function LoginScreen({ navigation }) {
         navigation.navigate('Home');
     };
 
-    const backgroundImages = [
-        require('../assets/Log.jpg'),
-        require('../assets/log1.jpg'),
-        require('../assets/log2.jpg'),
-        require('../assets/log3.jpg'),
-    ];
+    const backgroundImage = require('../assets/Log.jpg');
 
     return (
-        <View style={styles.swiperContainer}>
-            <Swiper
-                autoplay
-                loop
-                autoplayTimeout={5}
-                showsPagination={false}
-                removeClippedSubviews={false}
+        <View style={styles.container}>
+            <ImageBackground
+                source={backgroundImage}
+                style={styles.background}
+                resizeMode="cover"
             >
-                {backgroundImages.map((image, index) => (
-                    <View key={index} style={styles.slide}>
-                        <ImageBackground
-                            source={image}
-                            style={styles.background}
-                            resizeMode="cover"
-                        >
-                            <View style={styles.overlay}>
-                                <View style={styles.container}>
-                                    <Text style={styles.title}>Login</Text>
+                <View style={styles.overlay}>
+                    <View style={styles.innerContainer}>
+                        <Text style={styles.title}>Login</Text>
 
-                                    <TextInput
-                                        placeholder="Email"
-                                        placeholderTextColor="grey"
-                                        style={styles.input}
-                                        value={email}
-                                        onChangeText={setEmail}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                    />
+                        <TextInput
+                            placeholder="Email"
+                            placeholderTextColor="grey"
+                            style={styles.input}
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
 
-                                    <TextInput
-                                        placeholder="Password"
-                                        placeholderTextColor="grey"
-                                        style={styles.input}
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        secureTextEntry
-                                    />
+                        <TextInput
+                            placeholder="Password"
+                            placeholderTextColor="grey"
+                            style={styles.input}
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                        />
 
-                                    <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                                        <Text style={styles.buttonText}>Log In</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </ImageBackground>
+                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                            <Text style={styles.buttonText}>Log In</Text>
+                        </TouchableOpacity>
                     </View>
-                ))}
-            </Swiper>
+                </View>
+            </ImageBackground>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    swiperContainer: {
-        flex: 1,
-    },
-    slide: {
+    container: {
         flex: 1,
     },
     background: {
@@ -97,7 +76,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.4)',
         justifyContent: 'center',
     },
-    container: {
+    innerContainer: {
         justifyContent: 'center',
         paddingHorizontal: SCREEN_WIDTH * 0.05,
     },
