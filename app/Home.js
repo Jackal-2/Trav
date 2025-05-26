@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -10,18 +10,27 @@ import {
     TouchableWithoutFeedback,
     ScrollView,
     Image,
-    FlatList,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const IMAGE_WIDTH = SCREEN_WIDTH * 1;
+const IMAGE_WIDTH = SCREEN_WIDTH * 0.75;
+const IMAGE_HEIGHT = SCREEN_WIDTH * 1.09;
+const SPACER_WIDTH = (SCREEN_WIDTH - IMAGE_WIDTH) / 2;
 
 export default function HomeScreen({ navigation }) {
     const [isImageExpanded, setIsImageExpanded] = useState(false);
     const scaleAnim = useRef(new Animated.Value(1)).current;
-    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [selectedFilterIndex, setSelectedFilterIndex] = useState(null);
+    const [activeTabIndex, setActiveTabIndex] = useState(0);
     const scrollX = useRef(new Animated.Value(0)).current;
+
+    const tabs = [
+        { name: 'Home', icon: ['home-outline', 'home'] },
+        { name: 'Explore', icon: ['list-outline', 'compass'] },
+        { name: 'Saved', icon: ['heart-outline', 'bookmark'] },
+        { name: 'Profile', icon: ['person-outline', 'person'] },
+    ];
 
     const handleImagePress = () => {
         setIsImageExpanded(true);
@@ -41,149 +50,140 @@ export default function HomeScreen({ navigation }) {
         });
     };
 
-    const options = ['Beach', 'Mountain', 'City', 'Forest', 'Desert', 'Lake'];
-
+    const options = ['Africa', 'Europe', 'Asia', 'South America', 'Oceania', 'North America', 'Antarctica'];
     const handleOptionPress = (index) => {
-        if (selectedIndex === index) {
-            setSelectedIndex(null);
-        } else {
-            setSelectedIndex(index);
-        }
+        setSelectedFilterIndex(index === selectedFilterIndex ? null : index);
     };
 
     const images = [
-        require('../assets/log1.jpg'),
-        require('../assets/log2.jpg'),
-        require('../assets/log3.jpg'),
-        require('../assets/Log.jpg'),
+        { key: 'left-spacer' },
+        { src: require('../assets/log1.jpg') },
+        { src: require('../assets/log2.jpg') },
+        { src: require('../assets/log3.jpg') },
+        { src: require('../assets/Log.jpg') },
+        { key: 'right-spacer' },
     ];
 
     return (
         <View style={styles.container}>
-            <View style={styles.headerContainer}>
-                <View style={styles.textContainer}>
-                    <Text style={styles.greeting}>Hello, Fred</Text>
-                    <Text style={styles.subGreeting}>Welcome to travel</Text>
-                </View>
+            {!isImageExpanded ? (
+                <ScrollView
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingBottom: 150 }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.topContent}>
+                        <View style={styles.headerContainer}>
+                            <View style={styles.textContainer}>
+                                <Text style={styles.greeting}>Hello, Fred</Text>
+                                <Text style={styles.subGreeting}>Welcome to travel</Text>
+                            </View>
 
-                <TouchableOpacity onPress={handleImagePress} activeOpacity={0.8}>
-                    <Animated.Image
-                        source={require('../assets/man1.jpg')}
-                        style={styles.profileImage}
-                    />
-                </TouchableOpacity>
-            </View>
+                            <TouchableOpacity onPress={handleImagePress} activeOpacity={0.8}>
+                                <Animated.Image
+                                    source={require('../assets/man1.jpg')}
+                                    style={styles.profileImage}
+                                />
+                            </TouchableOpacity>
+                        </View>
 
-            <View style={styles.searchContainerWrapper}>
-                <View style={styles.searchContainer}>
-                    <TouchableOpacity>
-                        <Ionicons name="search" size={20} color="gray" style={styles.iconLeft} />
-                    </TouchableOpacity>
-                    <TextInput
-                        placeholder="Search"
-                        style={styles.searchInput}
-                        placeholderTextColor="gray"
-                    />
-                    <TouchableOpacity>
-                        <Ionicons name="options-outline" size={22} color="black" style={styles.iconRight} />
-                    </TouchableOpacity>
-                </View>
+                        <View style={styles.searchContainerWrapper}>
+                            <View style={styles.searchContainer}>
+                                <Ionicons name="search" size={20} color="gray" style={styles.iconLeft} />
+                                <TextInput
+                                    placeholder="Search"
+                                    style={styles.searchInput}
+                                    placeholderTextColor="gray"
+                                />
+                                <Ionicons name="options-outline" size={22} color="black" style={styles.iconRight} />
+                            </View>
 
-                <Text style={{ marginTop: 20, marginBottom: 10, fontWeight: 'bold', fontSize: 25 }}>
-                    Select your next trip
-                </Text>
+                            <Text style={styles.sectionTitle}>Select your next trip</Text>
 
-                <View style={styles.scrollContainer}>
-                    <ScrollView
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={styles.scrollContentContainer}
+                                style={styles.scrollViewStyle}
+                            >
+                                {options.map((option, index) => {
+                                    const isSelected = selectedFilterIndex === index;
+                                    return (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={[styles.optionButton, isSelected && styles.optionButtonSelected]}
+                                            onPress={() => handleOptionPress(index)}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.optionButtonText,
+                                                    isSelected && styles.optionButtonTextSelected,
+                                                ]}
+                                            >
+                                                {option}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
+                        </View>
+                    </View>
+
+                    <Animated.FlatList
+                        data={images}
+                        keyExtractor={(item, index) => index.toString()}
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.scrollContentContainer}
-                        style={styles.scrollViewStyle}
-                    >
-                        {options.map((option, index) => {
-                            const isSelected = selectedIndex === index;
+                        snapToInterval={IMAGE_WIDTH}
+                        decelerationRate="fast"
+                        bounces={false}
+                        contentContainerStyle={{
+                            paddingHorizontal: 0,
+                            alignItems: 'center',
+                        }}
+                        onScroll={Animated.event(
+                            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                            { useNativeDriver: true }
+                        )}
+                        scrollEventThrottle={16}
+                        renderItem={({ item, index }) => {
+                            if (!item.src) return <View style={{ width: SPACER_WIDTH }} />;
+                            const inputRange = [
+                                (index - 2) * IMAGE_WIDTH,
+                                (index - 1) * IMAGE_WIDTH,
+                                index * IMAGE_WIDTH,
+                            ];
+                            const scale = scrollX.interpolate({
+                                inputRange,
+                                outputRange: [0.9, 1, 0.9],
+                                extrapolate: 'clamp',
+                            });
+                            const translateY = scrollX.interpolate({
+                                inputRange,
+                                outputRange: [20, 0, 20],
+                                extrapolate: 'clamp',
+                            });
+
                             return (
-                                <TouchableOpacity
-                                    key={index}
+                                <Animated.View
                                     style={[
-                                        styles.optionButton,
-                                        isSelected && styles.optionButtonSelected,
+                                        styles.imageCard,
+                                        { transform: [{ scale }, { translateY }] },
                                     ]}
-                                    onPress={() => handleOptionPress(index)}
                                 >
-                                    <Text
-                                        style={[
-                                            styles.optionButtonText,
-                                            isSelected && styles.optionButtonTextSelected,
-                                        ]}
-                                    >
-                                        {option}
-                                    </Text>
-                                </TouchableOpacity>
+                                    <TouchableOpacity>
+                                        <Image
+                                            source={item.src}
+                                            style={styles.image}
+                                            resizeMode="cover"
+                                        />
+                                    </TouchableOpacity>
+                                </Animated.View>
                             );
-                        })}
-                    </ScrollView>
-                </View>
-
-                <Animated.FlatList
-                    data={images}
-                    keyExtractor={(_, index) => index.toString()}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    decelerationRate="fast"
-                    bounces={false}
-                    snapToInterval={IMAGE_WIDTH}
-                    contentContainerStyle={{
-                        paddingHorizontal: (SCREEN_WIDTH - IMAGE_WIDTH) / 2,
-                    }}
-                    onScroll={Animated.event(
-                        [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                        { useNativeDriver: true }
-                    )}
-                    scrollEventThrottle={16}
-                    renderItem={({ item, index }) => {
-                        const inputRange = [
-                            (index - 1) * IMAGE_WIDTH,
-                            index * IMAGE_WIDTH,
-                            (index + 1) * IMAGE_WIDTH,
-                        ];
-
-                        const translateY = scrollX.interpolate({
-                            inputRange,
-                            outputRange: [20, 0, 20],
-                            extrapolate: 'clamp',
-                        });
-
-                        const scale = scrollX.interpolate({
-                            inputRange,
-                            outputRange: [0.9, 1, 0.9],
-                            extrapolate: 'clamp',
-                        });
-
-                        return (
-                            <Animated.View
-                                style={{
-                                    width: IMAGE_WIDTH,
-                                    height: IMAGE_WIDTH,
-                                    marginHorizontal: -20, // overlap images
-                                    transform: [{ translateY }, { scale }],
-                                    borderRadius: 15,
-                                    overflow: 'hidden',
-                                    backgroundColor: '#ccc',
-                                }}
-                            >
-                                <Image
-                                    source={item}
-                                    style={{ width: '100%', height: '100%' }}
-                                    resizeMode="cover"
-                                />
-                            </Animated.View>
-                        );
-                    }}
-                />
-            </View>
-
-            {isImageExpanded && (
+                        }}
+                    />
+                </ScrollView>
+            ) : (
                 <TouchableWithoutFeedback onPress={handleCollapse}>
                     <View style={styles.overlay}>
                         <Animated.Image
@@ -193,6 +193,30 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 </TouchableWithoutFeedback>
             )}
+
+            {/* Tab Bar */}
+            <View style={[styles.tabBarContainer, { width: SCREEN_WIDTH * 0.85 }]}>
+                {tabs.map((tab, index) => {
+                    const isActive = activeTabIndex === index;
+                    const iconName = isActive ? tab.icon[1] : tab.icon[0];
+                    return (
+                        <TouchableOpacity
+                            key={index}
+                            style={styles.tabButton}
+                            onPress={() => setActiveTabIndex(index)}
+                            activeOpacity={0.8}
+                        >
+                            {isActive && <View style={styles.circleBehindIcon} />}
+                            <Ionicons
+                                name={iconName}
+                                size={24}
+                                color="#777"
+                                style={{ zIndex: 2 }}
+                            />
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
         </View>
     );
 }
@@ -200,9 +224,12 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: SCREEN_WIDTH * 0.06,
-        paddingVertical: 60,
+        paddingTop: 60,
         backgroundColor: '#f5f6f7',
+    },
+    topContent: {
+        paddingHorizontal: SCREEN_WIDTH * 0.06,
+        // removed marginBottom to avoid overlap
     },
     headerContainer: {
         flexDirection: 'row',
@@ -274,13 +301,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'black',
     },
-    scrollContainer: {
-        backgroundColor: 'transparent',
+    sectionTitle: {
         marginTop: 10,
-        marginBottom: 20,
+        marginBottom: 10,
+        fontWeight: 'bold',
+        fontSize: 25,
     },
     scrollViewStyle: {
         backgroundColor: 'transparent',
+        marginBottom: 20,
     },
     scrollContentContainer: {
         paddingHorizontal: 0,
@@ -304,5 +333,45 @@ const styles = StyleSheet.create({
     },
     optionButtonTextSelected: {
         color: 'white',
+    },
+    imageCard: {
+        width: IMAGE_WIDTH,
+        height: IMAGE_HEIGHT,
+        marginHorizontal: -8,
+        borderRadius: 20,
+        overflow: 'hidden',
+        backgroundColor: '#ddd',
+        alignSelf: 'center',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    tabBarContainer: {
+        position: 'absolute',
+        bottom: 30,
+        alignSelf: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        backgroundColor: '#000',
+        paddingHorizontal: 30,
+        paddingVertical: 20,
+        borderRadius: 40,
+        height: 80,
+        zIndex: 10,
+    },
+    tabButton: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+    },
+    circleBehindIcon: {
+        position: 'absolute',
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: 'white',
+        zIndex: 1,
     },
 });
